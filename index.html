@@ -125,26 +125,20 @@
                     }).filter(event => event); // 유효한 이벤트만 필터링
 
                     console.log("이벤트 확인:", events);
-                    // FullCalendar 초기화 또는 업데이트
+                    // FullCalendar 렌더링
                     const calendarEl = $('#calendar');
+                    calendarEl.fullCalendar('destroy');
+
                     calendarEl.fullCalendar({
+                        header: {
+                            left:'title',
+                            center: '',
+                            right: 'today prev,next'
+                        },
+                        events: events,
                         displayEventTime: false,
                         titleFormat: 'YYYY - MM'
                     });
-                    if (calendarEl.data('fullCalendar')) {
-                        calendarEl.fullCalendar('removeEvents');
-                        calendarEl.fullCalendar('addEventSource', events);
-                        calendarEl.fullCalendar('rerenderEvents');
-                    } else {
-                        calendarEl.fullCalendar({
-                            header: {
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'month'
-                            },
-                            events: events,
-                        });
-                    }
                 })
                 .catch(error => console.error('CSV 파일 로드 오류:', error));
         }
