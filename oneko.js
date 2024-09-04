@@ -8,6 +8,7 @@
     mousePosY = 0,
     frameCount = 0,
     idleTime = 0,
+    sleeptime = 0,
     idleAnimation = null,
     idleAnimationFrame = 0,
     forceSleep = false,
@@ -108,50 +109,13 @@
       resetIdleAnimation();
       return;
     }
-
-    // If Full App Display is on, sleep on its progress bar instead
-    const fullAppDisplay = document.getElementById("fad-progress");
-    if (fullAppDisplay) {
-      mousePosX = fullAppDisplay.getBoundingClientRect().right - 16;
-      mousePosY = fullAppDisplay.getBoundingClientRect().top - 12;
+    // If calendar app is on, sleep on its box instead
+    const calendar = document.getElementById("calendar");
+    if (calendar && Math.floor(Math.random() * 7) == 0) {
+      const calendarRect = calendar.getBoundingClientRect();
+      mousePosX = calendarRect.right - 16;
+      mousePosY = calendarRect.top - 8;
       return;
-    }
-
-    // Get the far right and top of the progress bar
-    const progressBar = document.querySelector(".main-nowPlayingBar-center .playback-progressbar");
-    const progressBarRight = progressBar.getBoundingClientRect().right;
-    const progressBarTop = progressBar.getBoundingClientRect().top;
-    const progressBarBottom = progressBar.getBoundingClientRect().bottom;
-
-    // Make the cat sleep on the progress bar
-    mousePosX = progressBarRight - 16;
-    mousePosY = progressBarTop - 8;
-
-    // Get the position of the remaining time
-    const remainingTime = document.querySelector(".main-playbackBarRemainingTime-container");
-    const remainingTimeLeft = remainingTime.getBoundingClientRect().left;
-    const remainingTimeBottom = remainingTime.getBoundingClientRect().bottom;
-    const remainingTimeTop = remainingTime.getBoundingClientRect().top;
-
-    // Get the position of elapsed time
-    const elapsedTime = document.querySelector(".playback-bar__progress-time-elapsed");
-    const elapsedTimeRight = elapsedTime.getBoundingClientRect().right;
-    const elapsedTimeLeft = elapsedTime.getBoundingClientRect().left;
-
-    // If the remaining time is on top right of the progress bar, make the cat sleep to the a little bit to the left of the remaining time
-    // Theme compatibility
-    if (remainingTimeLeft < progressBarRight && remainingTimeTop < progressBarBottom && progressBarTop - remainingTimeBottom < 32) {
-      mousePosX = remainingTimeLeft - 16;
-
-      // Comfy special case
-      if (Spicetify.Config.current_theme === "Comfy") {
-        mousePosY = progressBarTop - 14;
-      }
-
-      // Move the cat to the left of elapsed time if it is too close to the remaining time (Nord theme)
-      if (remainingTimeLeft - elapsedTimeRight < 32) {
-        mousePosX = elapsedTimeLeft - 16;
-      }
     }
   }
 
@@ -168,7 +132,7 @@
     nekoEl.style.height = "32px";
     nekoEl.style.position = "fixed";
     // nekoEl.style.pointerEvents = "none";
-    nekoEl.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variant}.gif')`;
+    nekoEl.style.backgroundImage = `url('./oneko.gif')`;
     nekoEl.style.imageRendering = "pixelated";
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
@@ -179,7 +143,14 @@
     document.body.appendChild(nekoEl);
 
     window.addEventListener("mousemove", (e) => {
-      if (forceSleep) return;
+      if (forceSleep) {
+        sleeptime += 1;
+        if (sleeptime > 10) {
+          sleeptime = 0;
+          if(Math.floor(Math.random() * 50) == 0) sleep();
+        }
+        return;
+      }
 
       mousePosX = e.clientX;
       mousePosY = e.clientY;
@@ -276,7 +247,7 @@
     idleTime += 1;
 
     // every ~ 20 seconds
-    if (idleTime > 10 && Math.floor(Math.random() * 200) == 0 && idleAnimation == null) {
+    if (idleTime > 10 && Math.floor(Math.random() * 10) == 0 && idleAnimation == null) {
       let avalibleIdleAnimations = ["sleeping", "scratchSelf"];
       if (nekoPosX < 32) {
         avalibleIdleAnimations.push("scratchWallW");
@@ -300,6 +271,10 @@
 
     switch (idleAnimation) {
       case "sleeping":
+        if(!forceSleep) {
+          forceSleep=true;
+          break;
+        }
         if (idleAnimationFrame < 8 && nudge && forceSleep) {
           setSprite("idle", 0);
           break;
@@ -312,9 +287,6 @@
           break;
         }
         setSprite("sleeping", Math.floor(idleAnimationFrame / 4));
-        if (idleAnimationFrame > 192 && !forceSleep) {
-          resetIdleAnimation();
-        }
         break;
       case "scratchWallN":
       case "scratchWallS":
@@ -348,8 +320,8 @@
     // Cat has to sleep on top of the progress bar
     if (forceSleep && Math.abs(diffY) < nekoSpeed && Math.abs(diffX) < nekoSpeed) {
       // Make the cat sleep exactly on the top of the progress bar
-      nekoPosX = mousePosX;
-      nekoPosY = mousePosY;
+      //nekoPosX = mousePosX;
+      //nekoPosY = mousePosY;
       nekoEl.style.left = `${nekoPosX - 16}px`;
       nekoEl.style.top = `${nekoPosY - 16}px`;
 
@@ -366,7 +338,8 @@
     idleAnimationFrame = 0;
 
     if (idleTime > 1) {
-      setSprite("alert", 0);
+      if(!forceSleep) setSprite("alert", 0);
+      else idleTime = 0;
       // count down after being alerted before moving
       idleTime = Math.min(idleTime, 7);
       idleTime -= 1;
@@ -408,7 +381,7 @@
 
     variant = arr[0];
     localStorage.setItem("oneko:variant", `"${variant}"`);
-    nekoEl.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variant}.gif')`;
+    nekoEl.style.backgroundImage = `url('./oneko.gif')`;
   }
 
   // Popup modal to choose variant
@@ -452,7 +425,7 @@
 
       div.className = "oneko-variant-button";
       div.id = variantEnum[0];
-      div.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variantEnum[0]}.gif')`;
+      div.style.backgroundImage = `url('./oneko.gif')`;
       div.style.setProperty("--idle-x", `${idle[0] * 64}px`);
       div.style.setProperty("--idle-y", `${idle[1] * 64}px`);
       div.style.setProperty("--active-x", `${active[0] * 64}px`);
