@@ -2,6 +2,7 @@
 
 (async function oneko() {
   const nekoEl = document.createElement("div");
+
   let nekoPosX = 32,
     nekoPosY = 32,
     mousePosX = 0,
@@ -11,12 +12,25 @@
     sleeptime = 0,
     idleAnimation = null,
     idleAnimationFrame = 0,
+    exactLoc = false,
     forceSleep = false,
     grabbing = false,
     grabStop = true,
     nudge = false,
     kuroNeko = false,
     variant = "classic";
+
+  const calendar = document.getElementById("calendar");
+  if (calendar) {
+    const calendarRect = calendar.getBoundingClientRect();
+    mousePosX = calendarRect.right - 16;
+    mousePosY = calendarRect.top - 8;
+    nekoPosX = mousePosX;
+    nekoPosY = mousePosY;
+    exactLoc = true;
+  } else {
+    exactLoc = false;
+  }
 
   function parseLocalStorage(key, fallback) {
     try {
@@ -109,14 +123,6 @@
       resetIdleAnimation();
       return;
     }
-    // If calendar app is on, sleep on its box instead
-    const calendar = document.getElementById("calendar");
-    if (calendar && Math.floor(Math.random() * 7) == 0) {
-      const calendarRect = calendar.getBoundingClientRect();
-      mousePosX = calendarRect.right - 16;
-      mousePosY = calendarRect.top - 8;
-      return;
-    }
   }
 
   function create() {
@@ -147,11 +153,12 @@
         sleeptime += 1;
         if (sleeptime > 10) {
           sleeptime = 0;
-          if(Math.floor(Math.random() * 50) == 0) sleep();
+          if (Math.floor(Math.random() * 300) == 0) forceSleep = false;
         }
         return;
       }
 
+      exactLoc = false;
       mousePosX = e.clientX;
       mousePosY = e.clientY;
     });
@@ -271,9 +278,9 @@
 
     switch (idleAnimation) {
       case "sleeping":
-        if(!forceSleep) {
-          forceSleep=true;
-          break;
+        if (!forceSleep) {
+          if (Math.floor(Math.random() * 6) == 0) exactLoc = true;
+          forceSleep = true;
         }
         if (idleAnimationFrame < 8 && nudge && forceSleep) {
           setSprite("idle", 0);
@@ -312,24 +319,27 @@
       grabStop && setSprite("alert", 0);
       return;
     }
+    // If exactLoc is true, sleep on its box instead
+    if (calendar && exactLoc) {
+      const calendarRect = calendar.getBoundingClientRect();
+      mousePosX = calendarRect.right - 16;
+      mousePosY = calendarRect.top - 8;
+    }
 
     const diffX = nekoPosX - mousePosX;
     const diffY = nekoPosY - mousePosY;
     const distance = Math.sqrt(diffX ** 2 + diffY ** 2);
+    console.log(distance, forceSleep, exactLoc);
 
-    // Cat has to sleep on top of the progress bar
-    if (forceSleep && Math.abs(diffY) < nekoSpeed && Math.abs(diffX) < nekoSpeed) {
-      // Make the cat sleep exactly on the top of the progress bar
-      //nekoPosX = mousePosX;
-      //nekoPosY = mousePosY;
-      nekoEl.style.left = `${nekoPosX - 16}px`;
-      nekoEl.style.top = `${nekoPosY - 16}px`;
-
-      idle();
-      return;
-    }
-
-    if ((distance < nekoSpeed || distance < 48) && !forceSleep) {
+    // cat stop distance
+    if (distance < nekoSpeed || distance < 48) {
+      if (exactLoc) {
+        // Make the cat exactly on the top of the calendar
+        nekoPosX = mousePosX;
+        nekoPosY = mousePosY;
+        nekoEl.style.left = `${nekoPosX - 16}px`;
+        nekoEl.style.top = `${nekoPosY - 16}px`;
+      }
       idle();
       return;
     }
@@ -338,7 +348,7 @@
     idleAnimationFrame = 0;
 
     if (idleTime > 1) {
-      if(!forceSleep) setSprite("alert", 0);
+      if (!forceSleep) setSprite("alert", 0);
       else idleTime = 0;
       // count down after being alerted before moving
       idleTime = Math.min(idleTime, 7);
