@@ -99,10 +99,7 @@
   function sleep() {
     forceSleep = !forceSleep;
     nudge = false;
-    if (!forceSleep) {
-      resetIdleAnimation();
-      return;
-    }
+    if (!forceSleep) resetIdleAnimation();
   }
 
   function create() {
@@ -124,7 +121,7 @@
     window.addEventListener("mousemove", (e) => {
       if (forceSleep) {
         sleepCount += 1;
-        if (sleepCount > 9000 || (Math.floor(Math.random() * 9000) == 0)) {
+        if (sleepCount > 50 && (Math.floor(Math.random() * 500) == 0)) {
           forceSleep = false;
           sleepCount = 0;
         }
