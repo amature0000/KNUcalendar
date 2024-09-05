@@ -9,16 +9,14 @@
     mousePosY = 0,
     frameCount = 0,
     idleTime = 0,
-    sleeptime = 0,
     idleAnimation = null,
     idleAnimationFrame = 0,
     exactLoc = false,
     forceSleep = false,
+    sleepCount = 0,
     grabbing = false,
     grabStop = true,
-    nudge = false,
-    kuroNeko = false,
-    variant = "classic";
+    nudge = false;
 
   const calendar = document.getElementById("calendar");
   if (calendar) {
@@ -32,24 +30,7 @@
     exactLoc = false;
   }
 
-  function parseLocalStorage(key, fallback) {
-    try {
-      const value = JSON.parse(localStorage.getItem(`oneko:${key}`));
-      return typeof value === typeof fallback ? value : fallback;
-    } catch (e) {
-      console.error(e);
-      return fallback;
-    }
-  }
-
   const nekoSpeed = 10,
-    variants = [
-      ["classic", "Classic"],
-      ["dog", "Dog"],
-      ["tora", "Tora"],
-      ["maia", "Maia (maia.crimew.gay)"],
-      ["vaporwave", "Vaporwave (nya.rest)"],
-    ],
     spriteSets = {
       idle: [[-3, -3]],
       alert: [[-7, -3]],
@@ -118,7 +99,6 @@
   function sleep() {
     forceSleep = !forceSleep;
     nudge = false;
-    localStorage.setItem("oneko:forceSleep", forceSleep);
     if (!forceSleep) {
       resetIdleAnimation();
       return;
@@ -126,13 +106,6 @@
   }
 
   function create() {
-    variant = parseLocalStorage("variant", "classic");
-    kuroNeko = parseLocalStorage("kuroneko", false);
-
-    if (!variants.some((v) => v[0] === variant)) {
-      variant = "classic";
-    }
-
     nekoEl.id = "oneko";
     nekoEl.style.width = "32px";
     nekoEl.style.height = "32px";
@@ -142,7 +115,7 @@
     nekoEl.style.imageRendering = "pixelated";
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
-    nekoEl.style.filter = kuroNeko ? "invert(100%)" : "none";
+    nekoEl.style.filter = "none";
     // Render Oneko below Spicetify's Popup Modal
     nekoEl.style.zIndex = "99";
 
@@ -150,10 +123,10 @@
 
     window.addEventListener("mousemove", (e) => {
       if (forceSleep) {
-        sleeptime += 1;
-        if (sleeptime > 10) {
-          sleeptime = 0;
-          if (Math.floor(Math.random() * 300) == 0) forceSleep = false;
+        sleepCount += 1;
+        if (sleepCount > 9000 || (Math.floor(Math.random() * 9000) == 0)) {
+          forceSleep = false;
+          sleepCount = 0;
         }
         return;
       }
@@ -161,13 +134,6 @@
       exactLoc = false;
       mousePosX = e.clientX;
       mousePosY = e.clientY;
-    });
-
-    window.addEventListener("resize", () => {
-      if (forceSleep) {
-        forceSleep = false;
-        sleep();
-      }
     });
 
     // Handle dragging of the cat
@@ -222,13 +188,6 @@
 
       window.addEventListener("mousemove", mousemove);
       window.addEventListener("mouseup", mouseup);
-    });
-
-    nekoEl.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      kuroNeko = !kuroNeko;
-      localStorage.setItem("oneko:kuroneko", kuroNeko);
-      nekoEl.style.filter = kuroNeko ? "invert(100%)" : "none";
     });
 
     nekoEl.addEventListener("dblclick", sleep);
@@ -373,116 +332,4 @@
   }
 
   create();
-
-  function getRandomSprite() {
-    let unusedKeys = keys.filter((key) => !usedKeys.has(key));
-    if (unusedKeys.length === 0) {
-      usedKeys.clear();
-      unusedKeys = keys;
-    }
-    const index = Math.floor(Math.random() * unusedKeys.length);
-    const key = unusedKeys[index];
-    usedKeys.add(key);
-    return [getSprite(key, 0), getSprite(key, 1)];
-  }
-
-  function setVariant(arr) {
-    console.log(arr);
-
-    variant = arr[0];
-    localStorage.setItem("oneko:variant", `"${variant}"`);
-    nekoEl.style.backgroundImage = `url('./oneko.gif')`;
-  }
-
-  // Popup modal to choose variant
-  function pickerModal() {
-    const container = document.createElement("div");
-    container.className = "oneko-variant-container";
-
-    const style = document.createElement("style");
-    // Each variant is a 64x64 sprite
-    style.innerHTML = `
-      .oneko-variant-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-      }
-      .oneko-variant-button {
-        width: 64px;
-        height: 64px;
-        margin: 8px;
-        cursor: pointer;
-        background-size: 800%;
-        border-radius: 25%;
-        transition: background-color 0.2s ease-in-out;
-        background-position: var(--idle-x) var(--idle-y);
-        image-rendering: pixelated;
-      }
-      .oneko-variant-button:hover, .oneko-variant-button-selected {
-        background-color: var(--spice-main-elevated);
-      }
-      .oneko-variant-button:hover {
-        background-position: var(--active-x) var(--active-y);
-      }
-    `;
-    container.appendChild(style);
-
-    const [idle, active] = getRandomSprite();
-
-    function variantButton(variantEnum) {
-      const div = document.createElement("div");
-
-      div.className = "oneko-variant-button";
-      div.id = variantEnum[0];
-      div.style.backgroundImage = `url('./oneko.gif')`;
-      div.style.setProperty("--idle-x", `${idle[0] * 64}px`);
-      div.style.setProperty("--idle-y", `${idle[1] * 64}px`);
-      div.style.setProperty("--active-x", `${active[0] * 64}px`);
-      div.style.setProperty("--active-y", `${active[1] * 64}px`);
-
-      div.onclick = () => {
-        setVariant(variantEnum);
-        document.querySelector(".oneko-variant-button-selected")?.classList.remove("oneko-variant-button-selected");
-        div.classList.add("oneko-variant-button-selected");
-      };
-
-      if (variantEnum[0] === variant) {
-        div.classList.add("oneko-variant-button-selected");
-      }
-
-      Spicetify.Tippy(div, {
-        ...Spicetify.TippyProps,
-        content: variantEnum[1],
-      });
-
-      return div;
-    }
-
-    for (const variant of variants) {
-      container.appendChild(variantButton(variant));
-    }
-
-    return container;
-  }
-
-  (async () => {
-    while (!Spicetify.Mousetrap) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    Spicetify.Mousetrap.bind("o n e k o", () => {
-      Spicetify.PopupModal.display({
-        title: "Choose your neko",
-        // Render the modal new every time it is opened
-        content: pickerModal(),
-      });
-    });
-  })();
-
-  if (parseLocalStorage("forceSleep", false)) {
-    while (!document.querySelector(".main-nowPlayingBar-center .playback-progressbar")) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    sleep();
-  }
 })();
