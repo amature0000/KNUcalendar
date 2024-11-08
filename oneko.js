@@ -96,12 +96,6 @@
     keys = Object.keys(spriteSets).filter((key) => spriteSets[key].length > 1),
     usedKeys = new Set();
 
-  function sleep() {
-    forceSleep = !forceSleep;
-    nudge = false;
-    if (!forceSleep) resetIdleAnimation();
-  }
-
   function create() {
     nekoEl.id = "oneko";
     nekoEl.style.width = "32px";
@@ -121,7 +115,7 @@
     window.addEventListener("mousemove", (e) => {
       if (forceSleep) {
         sleepCount += 1;
-        if (sleepCount > 50 && (Math.floor(Math.random() * 500) == 0)) {
+        if (sleepCount > 500) {
           forceSleep = false;
           sleepCount = 0;
         }
@@ -132,6 +126,12 @@
       mousePosX = e.clientX;
       mousePosY = e.clientY;
     });
+
+    function sleep() {
+      forceSleep = !forceSleep;
+      nudge = false;
+      if (!forceSleep) resetIdleAnimation();
+    }
 
     // Handle dragging of the cat
     nekoEl.addEventListener("mousedown", (e) => {
