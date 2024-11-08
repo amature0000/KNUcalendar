@@ -15,4 +15,3 @@ I modified the `oneko.js` library, originally from the [spicetify-oneko](https:/
 
 1. The kitten now interacts with **FullCalendar** elements, specifically the `#calendar` div.
 2. The kitten falls asleep faster and sleeps more deeply.
-3. When you move the mouse, the kitten sometimes wakes up, but not always. However, double-clicking always makes the kitten wake up or fall asleep.
