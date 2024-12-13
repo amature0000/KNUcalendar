@@ -15,3 +15,6 @@ I modified the `oneko.js` library, originally from the [spicetify-oneko](https:/
 
 1. The kitten now interacts with **FullCalendar** elements, specifically the `#calendar` div.
 2. The kitten falls asleep faster and sleeps more deeply.
+
+## CSV create code
+[google colab](https://colab.research.google.com/drive/17fYteoGdEXWHtkoZKUyJePl2qDnQobvP?usp=sharing)
