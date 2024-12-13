@@ -17,4 +17,4 @@ I modified the `oneko.js` library, originally from the [spicetify-oneko](https:/
 2. The kitten falls asleep faster and sleeps more deeply.
 
 ## CSV create code
-[google colab](https://colab.research.google.com/drive/17fYteoGdEXWHtkoZKUyJePl2qDnQobvP?usp=sharing)
+[google colab](https://colab.research.google.com/drive/1jjNnof3CaeyKtjMd9S9RMDfG7cfqLcE5?usp=sharing)
