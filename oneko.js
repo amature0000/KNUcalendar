@@ -285,7 +285,7 @@
     const diffX = nekoPosX - mousePosX;
     const diffY = nekoPosY - mousePosY;
     const distance = Math.sqrt(diffX ** 2 + diffY ** 2);
-    console.log(distance, forceSleep, exactLoc);
+    // console.log(distance, forceSleep, exactLoc);
 
     // cat stop distance
     if (distance < nekoSpeed || distance < 48) {
