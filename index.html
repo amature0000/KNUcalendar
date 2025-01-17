@@ -114,9 +114,9 @@
                         if (moment(start).isBefore(today)) {
                             start = today;
                         }
-                        // 날짜를 명시적으로 'YYYY-MM-DD' 형식으로 파싱
-                        start = moment(start, 'YYYY-MM-DD').format('YYYY-MM-DD');
-                        end = moment(end, 'YYYY-MM-DD').add(1, 'days').format('YYYY-MM-DD');
+                        // 날짜를 명시적으로 'YYYY.MM.DD' 형식으로 파싱
+                        start = moment(start, 'YYYY.MM.DD').format('YYYY-MM-DD');
+                        end = moment(end, 'YYYY.MM.DD').add(1, 'days').format('YYYY-MM-DD');
 
                         return {
                             title: title,
