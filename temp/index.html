@@ -80,11 +80,6 @@
             return "202408.csv";
         }
 
-        // 오늘 날짜를 'YYYY-MM-DD' 형식으로 반환하는 함수
-        function getToday() {
-            return moment().format('YYYY-MM-DD');
-        }
-
         // CSV 파일을 읽어들이는 함수
         function loadCSV() {
             const csvFilePath = getCSVFileName();
@@ -94,7 +89,7 @@
                 .then(data => {
                     console.log("CSV 데이터 로드 완료:", data);
 
-                    const today = getToday();
+                    const today = new Date();
                     const rows = data.split('\n').slice(1); // 첫 번째 행은 헤더이므로 건너뜀
                     const events = rows.map(row => {
                         const cols = row.split(',');
